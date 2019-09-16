@@ -1,7 +1,3 @@
 .vs/
 obj/
-bin/Debug/
-bin/Release/netstandard2.0/*
-!bin/Release/netstandard2.0/publish
-bin/Release/netstandard2.0/publish/*
-!bin/Release/netstandard2.0/publish/Pathfinder
+bin/

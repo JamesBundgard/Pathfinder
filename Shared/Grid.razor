@@ -1,21 +1,19 @@
-﻿<h3>Grid</h3>
-
-@code{
+﻿@code{
     [Parameter] public List<List<Tile>> Tiles { get; set; }
 }
 
-<table>
-    <tbody>
-        @for (int i = 0; i < Tiles.Count; i++) // Rows
-        {
-            <tr>
-                @for (int j = 0; j < Tiles[0].Count; i++) // Columns
-                {
-                    <td>
-                        Test2
-                    </td>
-                }
-                </tr>
+<p>@Tiles.Count by @Tiles[0].Count</p>
+
+<div class="grid" style="height: 75vh;">
+    @for (int i = 0; i < Tiles.Count; i++) // Rows
+    {
+        <div class="row" style="height: @(100/Tiles.Count)%">
+            @for (int j = 0; j < Tiles[0].Count; j++) // Columns
+            {
+                <div class="col" style="padding: 0px;">
+                    <div class="tile" style="height: 100%;border: 1px solid black;"></div>
+                </div>
             }
-    </tbody>
-</table>
+        </div>
+    }
+</div>

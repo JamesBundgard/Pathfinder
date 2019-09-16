@@ -7,5 +7,10 @@ namespace Pathfinder.Shared
 {
     public class Tile
     {
+        public Tile()
+        {
+
+        }
+
     }
 }

@@ -1,0 +1,92 @@
+﻿@code {
+
+    int numRows { get; set; }
+    int numCols { get; set; }
+    List<List<Tile>> Tiles { get; set; }
+
+
+    override protected void OnInitialized()
+    {
+        numRows = 10;
+        numCols = 10;
+        Tiles = new List<List<Tile>>();
+
+        for (int i = 0; i < numRows; i++)
+        {
+            Tiles.Add(new List<Tile>());
+
+            for (int j = 0; j < numCols; j++)
+            {
+                Tiles[i].Add(new Tile());
+            }
+        }
+    }
+
+    private void setRows(ChangeEventArgs e)
+    {
+        int newRows = int.Parse(e.Value.ToString());
+        Console.WriteLine("Rows: " + newRows.ToString());
+
+        if (newRows > numRows)
+        {
+            for (int i = numRows; i < newRows; i++)
+            {
+                Tiles.Add(new List<Tile>());
+
+                for (int j = 0; j < numCols; j++)
+                {
+                    Tiles[i].Add(new Tile());
+                }
+            }
+        }
+        else if (numRows > newRows)
+        {
+            Tiles.RemoveRange(0, numRows - newRows);
+        }
+
+        numRows = newRows;
+    }
+
+    private void setCols(ChangeEventArgs e)
+    {
+        int newCols = int.Parse(e.Value.ToString());
+        Console.WriteLine("Cols: " + newCols.ToString());
+
+        if (newCols > numCols)
+        {
+            for (int i = 0; i < numRows; i++)
+            {
+                for (int j = 0; j < newCols - numCols; j++)
+                {
+                    Tiles[i].Add(new Tile());
+                }
+            }
+        }
+        else if (numCols > newCols)
+        {
+            for (int i = 0; i < numRows; i++)
+            {
+                Tiles[i].RemoveRange(0, numCols - newCols);
+            }
+        }
+
+        numCols = newCols;
+    }
+}
+
+<label>Number of Rows:</label>
+<select @onchange=@(e => setRows(e)) value="10">
+    @for (int i = 5; i <= 100; i++)
+    {
+        <option value=@i>@i</option>
+    }
+</select>
+<label>Number of Columns:</label>
+<select @onchange=@(e => setCols(e)) value="10">
+    @for (int i = 5; i <= 100; i++)
+    {
+        <option value=@i>@i</option>
+    }
+</select>
+
+<Grid Tiles=@Tiles />
