@@ -1,15 +1,39 @@
 ﻿@code {
 
+    [Parameter] public Code CurrentAlgorithm { get; set; }
+
     int numRows { get; set; }
     int numCols { get; set; }
     List<List<Tile>> Tiles { get; set; }
 
+    private bool IsPlacingStart { get; set; }
+    private bool IsPlacingEnd { get; set; }
+    private bool IsPlacingWall { get; set; }
+    private bool CanTravelDiagonal { get; set; }
+    private bool StepperEnabled { get; set; }
+
+    private Tile CurrentStartPoint { get; set; }
+    private Tile CurrentEndPoint { get; set; }
+
+    private float TimeDelay { get; set; }
+    int CurrentLine { get; set; }
 
     override protected void OnInitialized()
     {
+        StepperEnabled = false;
+        CanTravelDiagonal = true;
+        IsPlacingStart = false;
+        IsPlacingEnd = false;
+        IsPlacingWall = true;
+
+        TimeDelay = 0;
+        CurrentLine = 0;
+
         numRows = 10;
         numCols = 10;
         Tiles = new List<List<Tile>>();
+        CurrentStartPoint = new Tile();
+        CurrentEndPoint = new Tile();
 
         for (int i = 0; i < numRows; i++)
         {
@@ -72,16 +96,62 @@
 
         numCols = newCols;
     }
+
+    public void OnTileClicked(TileClickReturnObj clickEvent)
+    {
+        Tile tile = Tiles[clickEvent.Row][clickEvent.Col];
+        if (IsPlacingStart)
+        {
+            CurrentStartPoint.ToggleStartPoint();
+            tile.ToggleStartPoint();
+            CurrentStartPoint = tile;
+            IsPlacingStart = false;
+        }
+        else if (IsPlacingEnd)
+        {
+            CurrentEndPoint.ToggleEndPoint();
+            tile.ToggleEndPoint();
+            CurrentEndPoint = tile;
+            IsPlacingEnd = false;
+        }
+        else
+        {
+            tile.ToggleWall();
+        }
+    }
+
+    private void StartSearch()
+    {
+        if (!StepperEnabled)
+        {
+            while (StepSearch())
+            {
+                Task.Delay((int)(TimeDelay * 1000));
+            }
+        }
+        else
+        {
+            StepSearch();
+        }
+    }
+
+    private bool StepSearch()
+    {
+        Console.WriteLine("Step");
+        CurrentAlgorithm.GetNextLine();
+        return false;
+    }
 }
 
-<label>Number of Rows:</label>
+<label>Rows:</label>
 <select @onchange=@(e => setRows(e)) value="10">
     @for (int i = 5; i <= 100; i++)
     {
         <option value=@i>@i</option>
     }
 </select>
-<label>Number of Columns:</label>
+
+<label>Columns:</label>
 <select @onchange=@(e => setCols(e)) value="10">
     @for (int i = 5; i <= 100; i++)
     {
@@ -89,4 +159,29 @@
     }
 </select>
 
-<Grid Tiles=@Tiles />
+<label>Place start:</label>
+<input type="checkbox" @bind=@IsPlacingStart />
+
+<label>Place end:</label>
+<input type="checkbox" @bind=@IsPlacingEnd />
+
+<label>Can travel diagonal?</label>
+<input type="checkbox" @bind=@CanTravelDiagonal />
+
+<label>Enable stepper?</label>
+<input type="checkbox" @bind=@StepperEnabled />
+
+<label>Auto run delay (seconds):</label>
+<select @bind=@TimeDelay>
+    @for (int i = 0; i <= 5; i++)
+    {
+        <option value=@i>@i</option>
+    }
+</select>
+
+<Grid Tiles=@Tiles TileClicked=@OnTileClicked />
+
+<button @onclick=@StartSearch>Start</button>
+<button @onclick=@(e => StepSearch())>Step</button>
+
+<CodeDisplay Code=@CurrentAlgorithm.Lines SelectedLine=@CurrentAlgorithm.CurrentLine />

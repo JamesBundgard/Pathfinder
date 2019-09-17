@@ -1,17 +1,29 @@
 ﻿@code{
     [Parameter] public List<List<Tile>> Tiles { get; set; }
+    [Parameter] public EventCallback<TileClickReturnObj> TileClicked { get; set; }
 }
-
-<p>@Tiles.Count by @Tiles[0].Count</p>
 
 <div class="grid" style="height: 75vh;">
     @for (int i = 0; i < Tiles.Count; i++) // Rows
     {
-        <div class="row" style="height: @(100/Tiles.Count)%">
+        int currentRow = i;
+        <div class="row"  style="height: @(100/Tiles.Count)%">
             @for (int j = 0; j < Tiles[0].Count; j++) // Columns
             {
+                int currentCol = j;
+                string BackgroundColor = (Tiles[currentRow][currentCol].IsWall)
+                    ? "black"
+                    : (Tiles[currentRow][currentCol].IsStartPoint) 
+                        ? "green" 
+                        : (Tiles[currentRow][currentCol].IsEndPoint)
+                            ? "red"
+                            : "white";
+
                 <div class="col" style="padding: 0px;">
-                    <div class="tile" style="height: 100%;border: 1px solid black;"></div>
+                    <div class="tile" style="height: 100%; outline: 1px solid black; background-color: @BackgroundColor" 
+                         @onclick=@(e => TileClicked.InvokeAsync(
+                                        new TileClickReturnObj(e, currentRow, currentCol)
+                                    ))></div>
                 </div>
             }
         </div>
