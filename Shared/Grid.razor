@@ -1,6 +1,35 @@
 ﻿@code{
     [Parameter] public List<List<Tile>> Tiles { get; set; }
     [Parameter] public EventCallback<TileClickReturnObj> TileClicked { get; set; }
+
+    private string GetColor(Tile tile)
+    {
+        if (tile.IsBeingLookedAt)
+        {
+            return "yellow";
+        }
+        if (tile.IsDiscovered)
+        {
+            return "blue";
+        }
+        else if (tile.IsWall)
+        {
+            return "black";
+        }
+        else if (tile.IsStartPoint)
+        {
+            return "green";
+        }
+        else if (tile.IsEndPoint)
+        {
+            return "red";
+        }
+        else
+        {
+            return "white";
+        }
+
+    }
 }
 
 <div class="grid" style="height: 75vh;">
@@ -11,13 +40,7 @@
             @for (int j = 0; j < Tiles[0].Count; j++) // Columns
             {
                 int currentCol = j;
-                string BackgroundColor = (Tiles[currentRow][currentCol].IsWall)
-                    ? "black"
-                    : (Tiles[currentRow][currentCol].IsStartPoint) 
-                        ? "green" 
-                        : (Tiles[currentRow][currentCol].IsEndPoint)
-                            ? "red"
-                            : "white";
+                string BackgroundColor = GetColor(Tiles[i][j]);
 
                 <div class="col" style="padding: 0px;">
                     <div class="tile" style="height: 100%; outline: 1px solid black; background-color: @BackgroundColor" 

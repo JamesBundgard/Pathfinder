@@ -13,7 +13,11 @@
     private bool StepperEnabled { get; set; }
 
     private Tile CurrentStartPoint { get; set; }
+    private int StartX { get; set; }
+    private int StartY { get; set; }
     private Tile CurrentEndPoint { get; set; }
+    private int EndX { get; set; }
+    private int EndY { get; set; }
 
     private float TimeDelay { get; set; }
     int CurrentLine { get; set; }
@@ -102,44 +106,56 @@
         Tile tile = Tiles[clickEvent.Row][clickEvent.Col];
         if (IsPlacingStart)
         {
+            StartX = clickEvent.Col;
+            StartY = clickEvent.Row;
             CurrentStartPoint.ToggleStartPoint();
             tile.ToggleStartPoint();
+            tile.IsWall = false;
+            tile.IsEndPoint = false;
             CurrentStartPoint = tile;
             IsPlacingStart = false;
         }
         else if (IsPlacingEnd)
         {
+            EndX = clickEvent.Col;
+            EndY = clickEvent.Row;
             CurrentEndPoint.ToggleEndPoint();
             tile.ToggleEndPoint();
+            tile.IsWall = false;
+            tile.IsStartPoint = false;
             CurrentEndPoint = tile;
             IsPlacingEnd = false;
         }
         else
         {
+
+            tile.IsEndPoint = false;
+            tile.IsStartPoint = false;
             tile.ToggleWall();
         }
     }
 
-    private void StartSearch()
+    async private void StartSearch()
     {
-        if (!StepperEnabled)
+        while(CurrentAlgorithm.Env.NextLine != 7)
         {
-            while (StepSearch())
-            {
-                Task.Delay((int)(TimeDelay * 1000));
-            }
-        }
-        else
-        {
+            //await Task.Delay((int)(1000 * TimeDelay));
+            await Task.Delay(100);
             StepSearch();
         }
     }
 
     private bool StepSearch()
     {
+        if (!CurrentAlgorithm.Initialized)
+        {
+            CurrentAlgorithm.Setup(CanTravelDiagonal, StartX, StartY, EndX, EndY);
+        }
         Console.WriteLine("Step");
+        Tiles = CurrentAlgorithm.RunLine(Tiles);
+        base.StateHasChanged();
         CurrentAlgorithm.GetNextLine();
-        return false;
+        return Tiles[EndY][EndX].IsDiscovered || false;
     }
 }
 
@@ -184,4 +200,4 @@
 <button @onclick=@StartSearch>Start</button>
 <button @onclick=@(e => StepSearch())>Step</button>
 
-<CodeDisplay Code=@CurrentAlgorithm.Lines SelectedLine=@CurrentAlgorithm.CurrentLine />
+<CodeDisplay Code=@CurrentAlgorithm.TextLines SelectedLine=@CurrentAlgorithm.CurrentCodeLine />

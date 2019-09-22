@@ -57,7 +57,15 @@ function A_Star(start, goal, h)
     // Open set is empty but goal was never reached
     return failure";
 
-        A_StarSearch = new Code(Text, 9);
+        List<Line> Lines = new List<Line>();
+        Lines.Add(new Line(
+            (Shared.Environment Env) =>
+            {
+                return Env;
+            }
+        ));
+
+        A_StarSearch = new Code(Text, 9, Lines);
     }
 }
 

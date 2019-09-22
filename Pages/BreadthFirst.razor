@@ -1,3 +1,163 @@
 ﻿@page "/bfs"
 
 <h1>Breadth-first Search</h1>
+
+@code {
+    public Code BreadthFirstSearch { get; set; }
+
+    override protected void OnInitialized()
+    {
+        string Text =
+@"procedure BFS(G,start_v):
+    let Q be a queue
+    label start_v as discovered
+    Q.enqueue(start_v)
+    while Q is not empty
+        v = Q.dequeue()
+        if v is the goal:
+            return v
+        for all edges from v to w in G.adjacentEdges(v) do
+            if w is not labeled as discovered:
+            label w as discovered
+            w.parent = v
+            Q.enqueue(w) ";
+
+        Line doNothingLine = new Line(
+            (Shared.Environment Env) =>
+            {
+                Env.NextLine++;
+                return Env;
+            }
+        );
+
+        List<Line> Lines = new List<Line>();
+        Lines.Add(doNothingLine);
+        Lines.Add(doNothingLine);
+        Lines.Add(new Line(
+            (Shared.Environment Env) =>
+            {
+                Env.Nodes[Env.StartY][Env.StartX].Discovered = true;
+
+                // Initailize used variables
+                Env.QueuesOfNodes.Add(new Queue<Node>());
+                Env.TempNodes.Add(new Node());
+                Env.StacksOfNodes.Add(new Stack<Node>());
+                Env.TempNodes.Add(new Node());
+
+                Env.NextLine++;
+                return Env;
+            }
+        ));
+        Lines.Add(new Line(
+            (Shared.Environment Env) =>
+            {
+                Console.WriteLine("here");
+                //Console.WriteLine("start:" + Env.StartX.ToString() + Env.StartY.ToString());
+                Env.QueuesOfNodes[0].Enqueue(new Node { X = Env.StartX, Y = Env.StartY });
+                Env.NextLine++;
+                return Env;
+            }
+        ));
+        Lines.Add(doNothingLine); // need to add while loop check for case where impossible
+        Lines.Add(new Line(
+            (Shared.Environment Env) =>
+            {
+                Env.TempNodes[0] = Env.QueuesOfNodes[0].Dequeue();
+                Env.NextLine++;
+                return Env;
+            }
+        ));
+        Lines.Add(new Line(
+            (Shared.Environment Env) =>
+            {
+                if(Env.TempNodes[0].IsEnd) Env.NextLine++;
+                else Env.NextLine += 2;
+                return Env;
+            }
+        ));
+        Lines.Add(new Line(
+            (Shared.Environment Env) =>
+            {
+                Env.TempNodes[0].Discovered = true;
+                //Need to handle ending
+                return Env;
+            }
+        ));
+        Lines.Add(new Line(
+            (Shared.Environment Env) =>
+            {
+                int x = Env.TempNodes[0].X;
+                int y = Env.TempNodes[0].Y;
+
+                if (y-1 >= 0) Env.StacksOfNodes[0].Push(Env.Nodes[y-1][x]);
+                if (y+1 != Env.Nodes.Count) Env.StacksOfNodes[0].Push(Env.Nodes[y+1][x]);
+                if (x-1 >= 0)
+                {
+                    Env.StacksOfNodes[0].Push(Env.Nodes[y][x - 1]);
+                    if (Env.CornersOn)
+                    {
+                        if (y-1 >= 0) Env.StacksOfNodes[0].Push(Env.Nodes[y-1][x-1]);
+                        if (y+1 != Env.Nodes.Count) Env.StacksOfNodes[0].Push(Env.Nodes[y+1][x-1]);
+                    }
+                }
+                if (x+1 != Env.Nodes[0].Count)
+                {
+                    Env.StacksOfNodes[0].Push(Env.Nodes[y][x + 1]);
+                    if (Env.CornersOn)
+                    {
+                        if (y-1 >= 0) Env.StacksOfNodes[0].Push(Env.Nodes[y-1][x+1]);
+                        if (y+1 != Env.Nodes.Count) Env.StacksOfNodes[0].Push(Env.Nodes[y+1][x+1]);
+                    }
+                }
+
+                Env.NextLine++;
+                return Env;
+            }
+        ));
+        Lines.Add(new Line(
+            (Shared.Environment Env) =>
+            {
+                if (Env.StacksOfNodes[0].Count != 0)
+                {
+                    Env.TempNodes[1] = Env.StacksOfNodes[0].Pop(); //w
+                    if (!Env.TempNodes[1].Discovered) Env.NextLine++;
+                }
+                else
+                {
+                    Env.NextLine -= 4;
+                }
+
+                return Env;
+            }
+        ));
+        Lines.Add(new Line(
+            (Shared.Environment Env) =>
+            {
+                Console.WriteLine("discovered:" + Env.TempNodes[1].X.ToString() + Env.TempNodes[1].Y.ToString());
+                Env.Nodes[Env.TempNodes[1].Y][Env.TempNodes[1].X].Discovered = true;
+                Env.NextLine++;
+                return Env;
+            }
+        ));
+        Lines.Add(new Line(
+            (Shared.Environment Env) =>
+            {
+                Env.Nodes[Env.TempNodes[1].Y][Env.TempNodes[1].Y].Discovered = Env.Nodes[Env.TempNodes[0].Y][Env.TempNodes[0].Y].Discovered; //w.parent = v
+                Env.NextLine++;
+                return Env;
+            }
+        ));
+        Lines.Add(new Line(
+            (Shared.Environment Env) =>
+            {
+                Env.QueuesOfNodes[0].Enqueue(Env.TempNodes[1]);
+                Env.NextLine -= 3;
+                return Env;
+            }
+        ));
+
+        BreadthFirstSearch = new Code(Text, 0, Lines);
+    }
+}
+
+<InteractiveGraphSearch CurrentAlgorithm=@BreadthFirstSearch />
